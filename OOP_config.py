@@ -15,12 +15,12 @@ def init_config():
   cs = CS.ConfigurationSpace()
 
      
-  conv_ops=["CONV1X1", "CONV3X3", "MAXPOOL3X3"])
+  conv_ops=(["conv1x1-bn-relu", "conv3x3-bn-relu", "maxpool3x3"])
   ops_parameters = [
         Parameter("type",               "Categorical", lower_or_constant_value = conv_ops ), 
         LTP_Parameter("input_1",               "Integer", 0,10),
         LTP_Parameter("input_2",               "Integer", 0,10)]
-  ops = Cumulative_Integer_Struct(cs,ops_parameters,"ops","num_ops","Integer",1,7)
+  ops = Cumulative_Integer_Struct(cs,ops_parameters,"ops","num_ops","Integer",1,4)
 
 
   conv_parameters = [

@@ -4,12 +4,11 @@ import logging
 logging.basicConfig(level=logging.WARNING)
 from nasbench import api
 import nasbench
-import tensorflow.compat.v1 as tf
-tf.disable_v2_behavior()
+import tensorflow
 import argparse
-from worker_hp_TEPS import MyWorker
 from algorithms import GA
 from multiprocessing import Pool
+from OOP_config import init_config
 from configEncoding import encode
 def dict_loop(dict_, list_):
     for ID, config in enumerate(list_):
@@ -32,8 +31,7 @@ def save2csv(filename : str, dictionary : dict, first = False,iter_num : int = 0
         for i in dictionary:
             writer.writerow([iter_num,i,dictionary[i]])
 
-w = MyWorker(sleep_interval = 0, nameserver='127.0.0.1',run_id='example1')
-configspace = w.get_configspace()
+configspace = init_config()
 ###Configuration Settings###
 pop_size = 36
 elite_size = 0.2
@@ -44,8 +42,8 @@ nasbench = api.NASBench('nasbench_data/nasbench_full.tfrecord')
 
 
 
-pop_dict = dict()
 population = configspace.sample_configuration(pop_size)
+pop_dict = dict()
 score_dict = dict()
 pop_dict = dict_loop(pop_dict, population) 
 
@@ -54,22 +52,15 @@ score_file = "scores.csv"
 first = True
 for count,i in enumerate(range(num_iter)):
     pop = []
-    for i in population:
-        pop.append(encode(i.get_dictionary()))
-    
-    with Pool(processes = 1) as pool:
-
-        results = pool.starmap(train_function, pop)
-        pool.close()
-        torch.cuda.empty_cache()
-        pool.join()
-    scores = []
-    for i in results:
-        scores.append(i)
-    score_dict = dict_loop(score_dict, scores) 
-    save2csv(config_file, pop_dict,first,count)  
-    save2csv(score_file, score_dict,first,count)  
-    population = configspace.sample_configuration(pop_size)
-    pop_dict = dict_loop(pop_dict, population) 
-    first = False 
+    while len(pop) < pop_size:
+        config = configspace.sample_configuration(1) 
+        cell = encode(config.get_dictionary())
+        print("Model Spec: ",cell)
+        print("Cell is valid: ", nasbench.is_valid(cell))
+        if nasbench.is_valid(cell):
+          pop.append(cell)
+    results = []
+    for i in pop: 
+       results.append(nasbench.query(i))
+    print(results)
                  
