@@ -41,7 +41,6 @@ batch_size = 256
 nasbench = api.NASBench('nasbench_data/nasbench_full.tfrecord')
 
 
-
 population = configspace.sample_configuration(pop_size)
 pop_dict = dict()
 score_dict = dict()
@@ -55,12 +54,17 @@ for count,i in enumerate(range(num_iter)):
     while len(pop) < pop_size:
         config = configspace.sample_configuration(1) 
         cell = encode(config.get_dictionary())
-        print("Model Spec: ",cell)
-        print("Cell is valid: ", nasbench.is_valid(cell))
         if nasbench.is_valid(cell):
           pop.append(cell)
     results = []
-    for i in pop: 
-       results.append(nasbench.query(i))
+    for c,i in enumerate(pop):
+      try:
+         print("Original Spec: ", i.original_matrix, i.original_ops)
+         print("Attempting to query: ",i.matrix, i.ops)
+         r = nasbench.query(i)
+         print("Result: ", r)
+         results.append(r)
+      except:
+         print("Model ",c, "failed")
     print(results)
                  

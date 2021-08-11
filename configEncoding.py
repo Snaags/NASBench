@@ -5,16 +5,12 @@ def generate_cell(op_dict, input_dict, output_op_idx):
   ops = [0]*len(op_dict.keys()) 
   ops.insert(0, "input")
   ops.append("output")
-  print(op_dict, input_dict)
-  input()
   # [op_idx, input_idx]
   for op_idx in op_dict:
       op = op_dict[op_idx]
       ops[op_idx] = op 
       for input_idx in input_dict[op_idx]:
-        print(op_idx, input_idx)
         cell_array[op_idx,input_idx] = 1
-        print(cell_array)
   cell_array = np.triu(cell_array.T, 1)
   cell_array[output_op_idx,output_op_idx +1] = 1
   return cell_array, ops
